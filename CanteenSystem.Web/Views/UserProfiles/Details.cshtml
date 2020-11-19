@@ -1,4 +1,4 @@
-﻿@model CanteenSystem.Web.Models.User
+﻿@model CanteenSystem.Web.Models.UserModel
 
 @{
     ViewData["Title"] = "Details";
@@ -7,38 +7,41 @@
 <h1>Details</h1>
 
 <div>
-    <h4>User</h4>
+    <h4>UserProfile</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Name)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Name)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.EmailAddress)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.EmailAddress)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Password)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Password)
-        </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.RollNumber)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.RollNumber)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Department)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Department)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.IsVerified)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.IsVerified)
+        </dd>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Role)
         </dd>
     </dl>
 </div>

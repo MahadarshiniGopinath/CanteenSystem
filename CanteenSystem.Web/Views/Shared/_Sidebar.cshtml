@@ -31,30 +31,17 @@
                         </p>
                     </a>
                 </li>
+                @if (User.Identity.IsAuthenticated)
+                {
                 <li class="nav-item">
-                    <a href="/users" class="nav-link">
+                    <a href="/userprofiles" class="nav-link">
                         <i class="nav-icon fas fa-users"></i>
                         <p>
                             Users
                         </p>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="/roles" class="nav-link">
-                        <i class="nav-icon fas fa-wind-turbine"></i>
-                        <p>
-                            Roles
-                        </p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/userroles" class="nav-link">
-                        <i class="nav-icon fas fa-wind-turbine"></i>
-                        <p>
-                            UserRoles
-                        </p>
-                    </a>
-                </li>
+                }
 
             </ul>
         </nav>

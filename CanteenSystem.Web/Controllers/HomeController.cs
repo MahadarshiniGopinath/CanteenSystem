@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using CanteenSystem.Web.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace CanteenSystem.Web.Controllers
 {
@@ -34,4 +38,22 @@ namespace CanteenSystem.Web.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
+
+     
+        
+
+  
+    //public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    //        {
+    //            public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+    //            {
+
+    //            }
+    //            protected override void OnModelCreating(ModelBuilder builder)
+    //            {
+    //                base.OnModelCreating(builder);
+    //            }
+    //        }
+        
+    
 }

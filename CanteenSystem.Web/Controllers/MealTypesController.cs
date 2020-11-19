@@ -6,26 +6,28 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CanteenSystem.Web.Models;
+using Microsoft.AspNetCore.Authorization;
+using CanteenSystem.Web.ViewModel;
 
-namespace CanteenSystem.Web
+namespace CanteenSystem.Web.Controllers
 {
-    public class UserRolesController : Controller
+    [Authorize(UserRoles.Admin)]
+    public class MealTypesController : Controller
     {
         private readonly CanteenSystemDbContext _context;
 
-        public UserRolesController(CanteenSystemDbContext context)
+        public MealTypesController(CanteenSystemDbContext context)
         {
             _context = context;
         }
 
-        // GET: UserRoles
+        // GET: MealTypes
         public async Task<IActionResult> Index()
         {
-            var canteenSystemDbContext = _context.UserRoles.Include(u => u.Role).Include(u => u.User);
-            return View(await canteenSystemDbContext.ToListAsync());
+            return View(await _context.MealTypes.ToListAsync());
         }
 
-        // GET: UserRoles/Details/5
+        // GET: MealTypes/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -33,45 +35,39 @@ namespace CanteenSystem.Web
                 return NotFound();
             }
 
-            var userRole = await _context.UserRoles
-                .Include(u => u.Role)
-                .Include(u => u.User)
+            var mealType = await _context.MealTypes
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (userRole == null)
+            if (mealType == null)
             {
                 return NotFound();
             }
 
-            return View(userRole);
+            return View(mealType);
         }
 
-        // GET: UserRoles/Create
+        // GET: MealTypes/Create
         public IActionResult Create()
         {
-            ViewData["RoleId"] = new SelectList(_context.Roles, "Id", "Name");
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Name");
             return View();
         }
 
-        // POST: UserRoles/Create
+        // POST: MealTypes/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,UserId,RoleId")] UserRole userRole)
+        public async Task<IActionResult> Create([Bind("Id,Name")] MealType mealType)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(userRole);
+                _context.Add(mealType);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["RoleId"] = new SelectList(_context.Roles, "Id", "Name", userRole.RoleId);
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Name", userRole.UserId);
-            return View(userRole);
+            return View(mealType);
         }
 
-        // GET: UserRoles/Edit/5
+        // GET: MealTypes/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -79,24 +75,22 @@ namespace CanteenSystem.Web
                 return NotFound();
             }
 
-            var userRole = await _context.UserRoles.FindAsync(id);
-            if (userRole == null)
+            var mealType = await _context.MealTypes.FindAsync(id);
+            if (mealType == null)
             {
                 return NotFound();
             }
-            ViewData["RoleId"] = new SelectList(_context.Roles, "Id", "Name", userRole.RoleId);
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Name", userRole.UserId);
-            return View(userRole);
+            return View(mealType);
         }
 
-        // POST: UserRoles/Edit/5
+        // POST: MealTypes/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,UserId,RoleId")] UserRole userRole)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] MealType mealType)
         {
-            if (id != userRole.Id)
+            if (id != mealType.Id)
             {
                 return NotFound();
             }
@@ -105,12 +99,12 @@ namespace CanteenSystem.Web
             {
                 try
                 {
-                    _context.Update(userRole);
+                    _context.Update(mealType);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!UserRoleExists(userRole.Id))
+                    if (!MealTypeExists(mealType.Id))
                     {
                         return NotFound();
                     }
@@ -121,12 +115,10 @@ namespace CanteenSystem.Web
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["RoleId"] = new SelectList(_context.Roles, "Id", "Name", userRole.RoleId);
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Name", userRole.UserId);
-            return View(userRole);
+            return View(mealType);
         }
 
-        // GET: UserRoles/Delete/5
+        // GET: MealTypes/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -134,32 +126,30 @@ namespace CanteenSystem.Web
                 return NotFound();
             }
 
-            var userRole = await _context.UserRoles
-                .Include(u => u.Role)
-                .Include(u => u.User)
+            var mealType = await _context.MealTypes
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (userRole == null)
+            if (mealType == null)
             {
                 return NotFound();
             }
 
-            return View(userRole);
+            return View(mealType);
         }
 
-        // POST: UserRoles/Delete/5
+        // POST: MealTypes/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var userRole = await _context.UserRoles.FindAsync(id);
-            _context.UserRoles.Remove(userRole);
+            var mealType = await _context.MealTypes.FindAsync(id);
+            _context.MealTypes.Remove(mealType);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool UserRoleExists(int id)
+        private bool MealTypeExists(int id)
         {
-            return _context.UserRoles.Any(e => e.Id == id);
+            return _context.MealTypes.Any(e => e.Id == id);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
@@ -6,8 +7,10 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace CanteenSystem.Web.Models
 {
-    public partial class CanteenSystemDbContext : DbContext
+ 
+    public partial class CanteenSystemDbContext : IdentityDbContext<ApplicationUser>
     {
+
         public CanteenSystemDbContext()
         {
         }
@@ -16,7 +19,6 @@ namespace CanteenSystem.Web.Models
             : base(options)
         {
         }
-
         public virtual DbSet<Cart> Carts { get; set; }
         public virtual DbSet<Discount> Discounts { get; set; }
         public virtual DbSet<MealMenu> MealMenus { get; set; }
@@ -25,10 +27,8 @@ namespace CanteenSystem.Web.Models
         public virtual DbSet<Order> Orders { get; set; }
         public virtual DbSet<OrderItem> OrderItems { get; set; }
         public virtual DbSet<Payment> Payments { get; set; }
-        public virtual DbSet<Role> Roles { get; set; }
-        public virtual DbSet<User> Users { get; set; }
-        public virtual DbSet<UserRole> UserRoles { get; set; }
-
+        public virtual DbSet<UserProfile> UserProfiles { get; set; }
+        public virtual DbSet<ParentMapping> ParentMapping { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -37,7 +37,7 @@ namespace CanteenSystem.Web.Models
                 optionsBuilder.UseSqlServer("data source=localhost;initial catalog=CanteenSystemDb;integrated security=True;MultipleActiveResultSets=True;App=EntityFramework");
             }
         }
-
+ 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Cart>(entity =>
@@ -121,11 +121,11 @@ namespace CanteenSystem.Web.Models
 
                 entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
 
-                entity.HasOne(d => d.User)
+                entity.HasOne(d => d.UserProfile)
                     .WithMany(p => p.Orders)
-                    .HasForeignKey(d => d.UserId)
+                    .HasForeignKey(d => d.UserProfileId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Orders_Users");
+                    .HasConstraintName("FK_Orders_UserProfiles");
             });
 
             modelBuilder.Entity<OrderItem>(entity =>
@@ -159,19 +159,7 @@ namespace CanteenSystem.Web.Models
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Payments_Orders");
             });
-
-            modelBuilder.Entity<Role>(entity =>
-            {
-                entity.Property(e => e.Description)
-                    .IsRequired()
-                    .HasMaxLength(500);
-
-                entity.Property(e => e.Name)
-                    .IsRequired()
-                    .HasMaxLength(100);
-            });
-
-            modelBuilder.Entity<User>(entity =>
+            modelBuilder.Entity<UserProfile>(entity =>
             {
                 entity.Property(e => e.Department)
                     .IsRequired()
@@ -185,29 +173,28 @@ namespace CanteenSystem.Web.Models
                     .IsRequired()
                     .HasMaxLength(500);
 
-                entity.Property(e => e.Password)
-                    .IsRequired()
-                    .HasMaxLength(50);
+                entity.HasOne(d => d.ApplicationUser)
+                    .WithMany(p => p.UserProfiles)
+                    .HasForeignKey(d => d.ApplicationUserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_ApplicationUsers_UserProfile");
             });
 
-            modelBuilder.Entity<UserRole>(entity =>
-            {
-                entity.HasOne(d => d.Role)
-                    .WithMany(p => p.UserRoles)
-                    .HasForeignKey(d => d.RoleId)
+            modelBuilder.Entity<ParentMapping>(entity =>
+            { 
+                entity.HasOne(d => d.ParentUserProfile)
+                    .WithMany(p => p.ParentUserProfiles)
+                    .HasForeignKey(d => d.ParentId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_UserRoles_Roles");
+                    .HasConstraintName("FK_UserParent_ParentUserProfiles");
 
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.UserRoles)
-                    .HasForeignKey(d => d.UserId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_UserRoles_Users");
+                entity.HasOne(d => d.StudentUserProfile)
+                     .WithMany(p => p.StudentUserProfiles)
+                     .HasForeignKey(d => d.StudentId)
+                     .OnDelete(DeleteBehavior.ClientSetNull)
+                     .HasConstraintName("FK_UserParent_StudentUserProfiles");
             });
-
-            OnModelCreatingPartial(modelBuilder);
-        }
-
-        partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+            base.OnModelCreating(modelBuilder);
+        } 
     }
 }
