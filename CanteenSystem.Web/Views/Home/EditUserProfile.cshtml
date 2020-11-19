@@ -33,12 +33,8 @@
                 <input asp-for="Department" class="form-control" />
                 <span asp-validation-for="Department" class="text-danger"></span>
             </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsVerified" /> @Html.DisplayNameFor(model => model.IsVerified)
-                </label>
-            </div>
-        
+          
+            @Html.HiddenFor(m => m.IsVerified)
             @Html.HiddenFor(m => m.ApplicationUserId)
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

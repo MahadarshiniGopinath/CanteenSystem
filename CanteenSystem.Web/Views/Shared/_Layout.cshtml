@@ -26,6 +26,29 @@
     <link rel="stylesheet" href="/plugins/daterangepicker/daterangepicker.css">
     <!-- summernote -->
     <link rel="stylesheet" href="/plugins/summernote/summernote-bs4.min.css">
+
+    <style>
+        .content-wrapper {
+        min-height:650px;}
+        .main-footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+        }
+        table {
+            border: 1px solid #dee2e6;
+           
+        }
+            table thead {
+                color: white;
+                background-color: #58728a;
+            }
+            table tbody {
+                background-color: white;
+            }
+
+    </style>
 </head>
 <body>
    
@@ -56,7 +79,7 @@
         }
             <!-- Main content -->
             <section class="content">
-                <div class="container-fluid">
+                <div class="container">
                     @RenderBody()
                 </div><!-- /.container-fluid -->
             </section>

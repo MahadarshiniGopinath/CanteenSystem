@@ -63,6 +63,7 @@ namespace CanteenSystem.Web.Controllers
                 {
                     var identity = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
                     identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
+                    identity.AddClaim(new Claim(ClaimTypes.UserData, userProfile.Id.ToString()));
                     identity.AddClaim(new Claim(ClaimTypes.Name, userProfile.Name));
                     var userRoles = await userManager.GetRolesAsync(user);
 
@@ -139,8 +140,7 @@ namespace CanteenSystem.Web.Controllers
                     Name = model.Firstname + " " + model.Lastname,
                     EmailAddress = model.Email,
                     Department = model.Department,
-                    RollNumber = model.Rollnumber,
-                    IsVerified = !model.IsParent,
+                    RollNumber = model.Rollnumber, 
                     ApplicationUserId = newlyCreatedUser.Id
                 };
                 _context.Add(user);
@@ -249,39 +249,7 @@ namespace CanteenSystem.Web.Controllers
         }
     }
 
-    public class CustomClaimsFactory
-        : UserClaimsPrincipalFactory<ApplicationUser, IdentityRole>
-    {
-
-        private readonly UserManager<ApplicationUser> _userManager;
-        public CustomClaimsFactory(
-            UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole> roleManager,
-            IOptions<IdentityOptions> optionsAccessor)
-            : base(userManager, roleManager, optionsAccessor)
-        { _userManager = userManager; }
-
-        public async override Task<ClaimsPrincipal> CreateAsync(ApplicationUser user)
-        {
-            var principal = await base.CreateAsync(user);
-            var identity = (ClaimsIdentity)principal.Identity;
-
-            var claims = new List<Claim>();
-            var userRoles = await _userManager.GetRolesAsync(user);
-
-            var role = userRoles.FirstOrDefault();
-            if (role != null)
-            {
-                claims.Add(new Claim(JwtClaimTypes.Role, role));
-            }
-            claims.Add(new Claim("UserName", user.UserName));
-            identity.AddClaims(claims);
-            return principal;
-        }
-
-
-    }
-
+    
 
 
 }

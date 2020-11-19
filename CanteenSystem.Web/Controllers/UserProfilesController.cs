@@ -38,7 +38,7 @@ namespace CanteenSystem.Web.Controllers
             foreach (var item in userProfiles)
             {
                  var userRole = await userManager.GetRolesAsync(item.ApplicationUser);
-                userModels.Add(ConvertUserToUserProfile(item, null));
+                userModels.Add(ConvertUserToUserProfile(item, userRole.FirstOrDefault()));
             }  
             return View(userModels);
         }
@@ -85,7 +85,7 @@ namespace CanteenSystem.Web.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,EmailAddress,RollNumber,Department,IsVerified,ApplicationUserId")] UserModel userProfile)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,EmailAddress,RollNumber,Department,IsVerified,ApplicationUserId")] UserProfile userProfile)
         {
             if (id != userProfile.Id)
             {
