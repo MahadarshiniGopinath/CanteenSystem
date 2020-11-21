@@ -29,6 +29,7 @@ namespace CanteenSystem.Web.Models
         public virtual DbSet<Payment> Payments { get; set; }
         public virtual DbSet<UserProfile> UserProfiles { get; set; }
         public virtual DbSet<ParentMapping> ParentMapping { get; set; }
+        public virtual DbSet<Card> Cards { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -193,6 +194,20 @@ namespace CanteenSystem.Web.Models
                      .HasForeignKey(d => d.StudentId)
                      .OnDelete(DeleteBehavior.ClientSetNull)
                      .HasConstraintName("FK_UserParent_StudentUserProfiles");
+            });
+
+            modelBuilder.Entity<Card>(entity =>
+            { 
+                entity.Property(e => e.CardNumber)
+                    .IsRequired()
+                    .HasMaxLength(100);
+                entity.Property(e => e.AvailableBalance)
+                   .IsRequired(); 
+                entity.HasOne(d => d.UserProfile)
+                    .WithMany(p => p.Cards)
+                    .HasForeignKey(d => d.UserProfileId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Cards_UserProfiles");
             });
             base.OnModelCreating(modelBuilder);
         } 

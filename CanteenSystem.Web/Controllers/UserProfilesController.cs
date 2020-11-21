@@ -149,14 +149,39 @@ namespace CanteenSystem.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            
+
+            var cards = _context.Cards.FirstOrDefault(x=>x.UserProfileId == id);
+            if (cards != null)
+            {
+                _context.Cards.Remove(cards);
+            }
+
+            var orders = _context.Orders.Where(x => x.UserProfileId == id);
+            if (orders != null)
+            {
+                _context.Orders.RemoveRange(orders);
+            }
+
+            var parentMappings = _context.ParentMapping.Where(x => x.ParentId == id || x.StudentId == id);
+            if (parentMappings != null)
+            {
+                _context.ParentMapping.RemoveRange(parentMappings);
+            }
+            //var carts = _context.Carts.FirstOrDefault(x => x.use == id);
+            //if (carts != null)
+            //{
+            //    _context.Orders.Remove(orders);
+            //} 
+
             var userProfile = await _context.UserProfiles.FindAsync(id);
             _context.UserProfiles.Remove(userProfile);
-           
+
 
             var applicationUser = await userManager.FindByIdAsync(userProfile.ApplicationUserId);
-          
+
             if (applicationUser != null)
-            { 
+            {
                 await userManager.DeleteAsync(applicationUser);
             }
             await _context.SaveChangesAsync();

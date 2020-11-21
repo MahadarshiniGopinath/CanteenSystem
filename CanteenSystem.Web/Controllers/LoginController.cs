@@ -44,7 +44,7 @@ namespace CanteenSystem.Web.Controllers
         }
 
         [Route("login")]
-        public IActionResult Index(string returnUrl = null)
+        public IActionResult Login(string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             return View(new LoginModel());
@@ -59,7 +59,12 @@ namespace CanteenSystem.Web.Controllers
             {
                 var userProfile = _context.UserProfiles.Where(x => x.EmailAddress == model.Username)
                     .FirstOrDefault();
-                if (userProfile != null && userProfile.IsVerified)
+                if (userProfile == null)
+                {
+                    ModelState.AddModelError("", "Something wrong with system. please try again later.");
+                    return View();
+                }
+                if (userProfile.IsVerified)
                 {
                     var identity = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
                     identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
@@ -79,12 +84,12 @@ namespace CanteenSystem.Web.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError("", "Invalid UserName or Password");
+                    ModelState.AddModelError("", "Your registeration is yet to be verified by admin.");
                     return View();
                 }
             }
             ModelState.AddModelError("", "Invalid UserName or Password");
-            return RedirectToLocal(returnUrl);
+            return View();
         }
 
         private IActionResult RedirectToLocal(string returnUrl)
@@ -106,15 +111,28 @@ namespace CanteenSystem.Web.Controllers
         [Route("register")]
         public async Task<IActionResult> Register(RegisterModel model)
         {
-
             var userExists = await userManager.FindByNameAsync(model.Email);
-
-            var existingRoleNumber = _context.UserProfiles.Where(x => x.RollNumber == model.Rollnumber).FirstOrDefault();
-            if (userExists != null || existingRoleNumber != null)
+            var studentId = 0;
+            if (!model.IsParent)
             {
-                ModelState.AddModelError("error", "User already exists!");
+                var existingRoleNumber = _context.UserProfiles.Where(x => x.RollNumber == model.Rollnumber).FirstOrDefault();
+                if (userExists != null || existingRoleNumber != null)
+                {
+                    ModelState.AddModelError("error", "User already exists!");
 
-                return View("Register", model);
+                    return View("Register", model);
+                }
+            }
+            else
+            {
+                var studentEmailAddress = _context.UserProfiles.Where(x => x.EmailAddress == model.StudentEmail).FirstOrDefault();
+                if (studentEmailAddress == null)
+                {
+                    ModelState.AddModelError("error", "The student email address doesnt exist");
+
+                    return View("Register", model);
+                }
+                studentId = studentEmailAddress.Id;
             }
             var applicationUser = new ApplicationUser()
             {
@@ -140,11 +158,36 @@ namespace CanteenSystem.Web.Controllers
                     Name = model.Firstname + " " + model.Lastname,
                     EmailAddress = model.Email,
                     Department = model.Department,
-                    RollNumber = model.Rollnumber, 
+                    RollNumber = model.Rollnumber,
                     ApplicationUserId = newlyCreatedUser.Id
                 };
+                Random generator = new Random();
+                int r = generator.Next(100000, 1000000);
+
                 _context.Add(user);
                 _context.SaveChanges();
+
+                if (model.IsParent)
+                {
+                    var card = new Card()
+                    {
+                        CardNumber = $"CN{r}SM",
+                        IsActive = true,
+                        AvailableBalance = 0,
+                        UserProfileId = user.Id
+                    };
+                    _context.Add(card);
+
+
+                    var parentMapping = new ParentMapping()
+                    {
+                        StudentId = studentId,
+                        ParentId = user.Id
+                    };
+                    _context.Add(parentMapping);
+                    _context.SaveChanges();
+                }
+
             }
             if (!model.IsParent)
             {
@@ -158,6 +201,8 @@ namespace CanteenSystem.Web.Controllers
             }
             else
             {
+
+
                 if (!await roleManager.RoleExistsAsync(UserRoles.Parents))
                     await roleManager.CreateAsync(new IdentityRole(UserRoles.Parents));
 
@@ -166,8 +211,9 @@ namespace CanteenSystem.Web.Controllers
                     await userManager.AddToRoleAsync(newlyCreatedUser, UserRoles.Parents);
                 }
             }
-
             return RedirectToAction(nameof(Index));
+
+
         }
 
         [Route("register/admin")]
@@ -248,9 +294,5 @@ namespace CanteenSystem.Web.Controllers
             return View();
         }
     }
-
-    
-
-
 }
 

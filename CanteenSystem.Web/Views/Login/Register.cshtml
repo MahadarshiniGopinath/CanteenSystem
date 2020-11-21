@@ -4,58 +4,104 @@
     ViewData["Title"] = "Register";
     var postUrl = Model.IsAdmin ? "/register/admin" : "/register";
 }
+<style>
 
-<div>
 
+    .register-wrapper {
+        padding: 5px;
+    }
 
-    @Html.ValidationSummary(false, "", new { @class = "text-danger" })
-    <form action="@(postUrl)" method="post">
+    .validation-summary ul {
+        list-style-type: none;
+        color: white;
+        text-align: left;
+        padding: 0;
+    }
 
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                <label for="Firstname">Firstname</label>
-                <input type="text" class="form-control" id="Firstname" name="Firstname" placeholder="Firstname">
+    .inner-div {
+        margin: 0 auto;
+        width: 500px;
+        height: 600px;
+        color: white;
+        background: rgb(2,0,36);
+        padding: 30px;
+        background: linear-gradient(90deg, rgb(2 0 36 / 25%) 0%, rgba(9,86,121,1) 35%, rgba(0,212,255,1) 100%);
+    }
+</style>
+<div class="register-wrapper">
+    <div class="inner-div">
+        <div class="validation-summary"> @Html.ValidationSummary(false)</div>
+        <form action="@(postUrl)" method="post">
+            <h4>Register your details</h4>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="Firstname">Firstname</label>
+                    <input type="text" class="form-control" id="Firstname" name="Firstname" placeholder="Firstname">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="Lastname">Lastname</label>
+                    <input type="text" class="form-control" id="Lastname" name="Lastname" placeholder="Lastname">
+                </div>
             </div>
-            <div class="form-group col-md-6">
-                <label for="Lastname">Lastname</label>
-                <input type="text" class="form-control" id="Lastname" name="Lastname" placeholder="Lastname">
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="Email">Email</label>
+                    <input type="email" class="form-control" id="Email" name="Email" placeholder="Email">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="Password">Password</label>
+                    <input type="password" class="form-control" id="Password" name="Password" placeholder="Password">
+                </div>
             </div>
-        </div>
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                <label for="Email">Email</label>
-                <input type="email" class="form-control" id="Email" name="Email" placeholder="Email">
-            </div>
-            <div class="form-group col-md-6">
-                <label for="Password">Password</label>
-                <input type="password" class="form-control" id="Password" name="Password" placeholder="Password">
-            </div>
-        </div>
 
-        <div class="form-group">
-            <label for="Department">Department</label>
-            <input type="text" class="form-control" id="Department" name="Department" placeholder="Department">
-        </div>
-
-        <div class="form-group">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="IsParent" id="IsParent">
-                <label class="form-check-label" for="IsParent">
-                    Is Parent
-                </label>
+            <div class="form-group">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="IsParent" id="IsParent" onclick="toggle_validator();">
+                    <label class="form-check-label" for="IsParent" value="false">
+                        Is Parent
+                    </label>
+                </div>
             </div>
-        </div>
-        <div class="form-group">
-            <label for="Rollnumber">Rollnumber</label>
-            <input type="number" class="form-control" id="Rollnumber" name="Rollnumber" placeholder="Rollnumber">
-        </div>
-        <div class="form-group">
-            <label for="Rollnumber">Student Email</label>
-            <input type="number" class="form-control" id="StudentEmail" name="StudentEmail" placeholder="Student Email">
-        </div>
-        <button type="submit" class="btn btn-primary">Register</button>
-    </form>
 
+
+            <div class="form-group" id="DepartmentDiv" style="display:block">
+                <label for="Department">Department</label>
+                <input type="text" class="form-control" id="Department" name="Department" placeholder="Department">
+            </div>
+            <div class="form-group" id="RollnumberDiv" style="display:block">
+                <label for="Rollnumber">Rollnumber</label>
+                <input type="number" class="form-control" id="Rollnumber" name="Rollnumber" placeholder="Rollnumber">
+            </div>
+            <div class="form-group" id="StudentEmailDiv" style="display:none">
+                <label for="Rollnumber">Student Email</label>
+                <input type="email" class="form-control" id="StudentEmail" name="StudentEmail" placeholder="Student Email">
+            </div>
+            <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+    </div>
 
 </div>
+
+
+<script>
+
+    var Rollnumber = document.getElementById("RollnumberDiv");
+    var Department = document.getElementById("DepartmentDiv");
+    var StudentEmail = document.getElementById("StudentEmailDiv");
+    function toggle_validator(e) {
+       
+        if (document.getElementById('IsParent').checked) {
+            $('#IsParent').val(true);
+            Rollnumber.style.display = "none";
+            Department.style.display = "none";
+            StudentEmailDiv.style.display = "block";
+        }
+        else {
+            $('#IsParent').val(false);
+            Rollnumber.style.display = "block";
+            Department.style.display = "block";
+            StudentEmailDiv.style.display = "none";
+        }
+    }
+</script>
 

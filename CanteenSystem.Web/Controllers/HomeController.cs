@@ -88,6 +88,7 @@ namespace CanteenSystem.Web.Controllers
         // POST: UserProfiles/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Route("EditUserProfile/{id}")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditUserProfile(int id, [Bind("Id,Name,EmailAddress,RollNumber,Department,IsVerified,ApplicationUserId")] UserProfile userProfile)

@@ -1,0 +1,55 @@
+﻿@model CanteenSystem.Web.Models.Card
+
+@{
+    ViewData["Title"] = "Details";
+}
+<style>
+    .main-wrapper {
+        padding: 20px;
+    }
+
+    .inner-div {
+        margin: 0 auto;
+        width: 500px;
+        height: 350px;
+       
+        color: white;
+        background: rgb(2,0,36);
+        padding: 30px;
+        background: linear-gradient(90deg, rgb(2 0 36 / 25%) 0%, rgba(9,86,121,1) 35%, rgba(0,212,255,1) 100%);
+    }
+</style>
+<div class="main-wrapper">
+
+    <div class="inner-div">
+        <h1 style="text-align:center;">Your Available Balance</h1>
+        <hr />
+
+
+        @if (ViewBag.Status != "" && ViewBag.Status != null)
+        {
+            <div>@ViewBag.Status</div>
+        }
+        <dl class="row">
+            <dt class="col-sm-6">
+                Card number
+            </dt>
+            <dd class="col-sm-6">
+                @Html.DisplayFor(model => model.CardNumber)
+            </dd>
+
+        </dl>
+        <dl class="row">
+
+            <dt class="col-sm-6">
+                Available balance
+            </dt>
+            <dd class="col-sm-6">
+                @Html.DisplayFor(model => model.AvailableBalance)
+            </dd>
+        </dl>
+        <br />
+        <br />
+        <a class="btn  btn-primary text-center" href="/AddStudentFund/@Model.Id/@Model.UserProfileId">Add fund</a>
+    </div>
+</div> 
