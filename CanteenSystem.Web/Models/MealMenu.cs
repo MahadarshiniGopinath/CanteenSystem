@@ -18,7 +18,7 @@ namespace CanteenSystem.Web.Models
         public string MealName { get; set; }
         public int MealTypeId { get; set; }
         public double Price { get; set; }
-        public int DiscountId { get; set; }
+        public int? DiscountId { get; set; }
 
         public virtual Discount Discount { get; set; }
         public virtual MealType MealType { get; set; }

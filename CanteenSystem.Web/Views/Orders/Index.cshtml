@@ -1,0 +1,57 @@
+﻿@model IEnumerable<CanteenSystem.Web.Models.Order>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Available orders</h1>
+ 
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.OrderReference)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TotalPrice)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CreatedDate)
+            </th>
+            <th>
+                Student Name
+            </th>
+            <th>
+                Student Rollnumber
+            </th>
+            <th>
+               View detail
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.OrderReference)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TotalPrice)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreatedDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UserProfile.StudentUserProfiles.FirstOrDefault().StudentUserProfile.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UserProfile.StudentUserProfiles.FirstOrDefault().StudentUserProfile.RollNumber)
+            </td>
+            <td>
+                <a asp-action="Index"  asp-controller="OrderItems"  asp-route-id="@item.Id">Details</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

@@ -19,16 +19,57 @@
         @if (SignInManager.IsSignedIn(User) && User.Claims.Any(c => c.Type == JwtClaimTypes.Role && c.Value == "Admin"))
         {
             <li class="nav-item">
-                <a class="nav-link text-dark" asp-controller="UserProfiles"
-                   asp-action="Index">Users</a>
+                <a href="/orders" class="nav-link">
+
+                    <p>
+                        View all Orders
+                    </p>
+                </a>
             </li>
+            <li class="nav-item">
+                <a href="/userprofiles" class="nav-link">
 
+                    <p>
+                        Users
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/mealtypes" class="nav-link">
+
+                    <p>
+                        Meal Types
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/mealmenus" class="nav-link">
+
+                    <p>
+                        Meal Menu
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/discounts" class="nav-link">
+
+                    <p>
+                        Discounts
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/MealMenuAvailabilities" class="nav-link">
+
+                    <p>
+                        Meal Availabilities
+                    </p>
+                </a>
+            </li>
         }
-         
-    </ul>
 
 
-
+    </ul> 
     <ul class="navbar-nav ml-auto">
         @if (SignInManager.IsSignedIn(User))
         {

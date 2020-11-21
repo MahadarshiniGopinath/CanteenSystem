@@ -6,29 +6,28 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CanteenSystem.Web.Models;
-using Microsoft.AspNetCore.Authorization;
-using CanteenSystem.Web.ViewModel;
 using IdentityModel;
 
 namespace CanteenSystem.Web.Controllers
 {
     [ClaimRequirement(JwtClaimTypes.Role, "Admin")]
-    public class MealTypesController : Controller
+    public class MealMenuAvailabilitiesController : Controller
     {
         private readonly CanteenSystemDbContext _context;
 
-        public MealTypesController(CanteenSystemDbContext context)
+        public MealMenuAvailabilitiesController(CanteenSystemDbContext context)
         {
             _context = context;
         }
 
-        // GET: MealTypes
+        // GET: MealMenuAvailabilities
         public async Task<IActionResult> Index()
         {
-            return View(await _context.MealTypes.ToListAsync());
+            var canteenSystemDbContext = _context.MealMenuAvailabilities.Include(m => m.MealMenu);
+            return View(await canteenSystemDbContext.ToListAsync());
         }
 
-        // GET: MealTypes/Details/5
+        // GET: MealMenuAvailabilities/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -36,39 +35,42 @@ namespace CanteenSystem.Web.Controllers
                 return NotFound();
             }
 
-            var mealType = await _context.MealTypes
+            var mealMenuAvailability = await _context.MealMenuAvailabilities
+                .Include(m => m.MealMenu)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (mealType == null)
+            if (mealMenuAvailability == null)
             {
                 return NotFound();
             }
 
-            return View(mealType);
+            return View(mealMenuAvailability);
         }
 
-        // GET: MealTypes/Create
+        // GET: MealMenuAvailabilities/Create
         public IActionResult Create()
         {
+            ViewData["MealMenuId"] = new SelectList(_context.MealMenus, "Id", "MealName");
             return View();
         }
 
-        // POST: MealTypes/Create
+        // POST: MealMenuAvailabilities/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] MealType mealType)
+        public async Task<IActionResult> Create([Bind("Id,MealMenuId,AvailabilityDate")] MealMenuAvailability mealMenuAvailability)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(mealType);
+                _context.Add(mealMenuAvailability);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(mealType);
+            ViewData["MealMenuId"] = new SelectList(_context.MealMenus, "Id", "MealName", mealMenuAvailability.MealMenuId);
+            return View(mealMenuAvailability);
         }
 
-        // GET: MealTypes/Edit/5
+        // GET: MealMenuAvailabilities/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -76,22 +78,23 @@ namespace CanteenSystem.Web.Controllers
                 return NotFound();
             }
 
-            var mealType = await _context.MealTypes.FindAsync(id);
-            if (mealType == null)
+            var mealMenuAvailability = await _context.MealMenuAvailabilities.FindAsync(id);
+            if (mealMenuAvailability == null)
             {
                 return NotFound();
             }
-            return View(mealType);
+            ViewData["MealMenuId"] = new SelectList(_context.MealMenus, "Id", "MealName", mealMenuAvailability.MealMenuId);
+            return View(mealMenuAvailability);
         }
 
-        // POST: MealTypes/Edit/5
+        // POST: MealMenuAvailabilities/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] MealType mealType)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,MealMenuId,AvailabilityDate")] MealMenuAvailability mealMenuAvailability)
         {
-            if (id != mealType.Id)
+            if (id != mealMenuAvailability.Id)
             {
                 return NotFound();
             }
@@ -100,12 +103,12 @@ namespace CanteenSystem.Web.Controllers
             {
                 try
                 {
-                    _context.Update(mealType);
+                    _context.Update(mealMenuAvailability);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!MealTypeExists(mealType.Id))
+                    if (!MealMenuAvailabilityExists(mealMenuAvailability.Id))
                     {
                         return NotFound();
                     }
@@ -116,10 +119,11 @@ namespace CanteenSystem.Web.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(mealType);
+            ViewData["MealMenuId"] = new SelectList(_context.MealMenus, "Id", "MealName", mealMenuAvailability.MealMenuId);
+            return View(mealMenuAvailability);
         }
 
-        // GET: MealTypes/Delete/5
+        // GET: MealMenuAvailabilities/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -127,30 +131,31 @@ namespace CanteenSystem.Web.Controllers
                 return NotFound();
             }
 
-            var mealType = await _context.MealTypes
+            var mealMenuAvailability = await _context.MealMenuAvailabilities
+                .Include(m => m.MealMenu)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (mealType == null)
+            if (mealMenuAvailability == null)
             {
                 return NotFound();
             }
 
-            return View(mealType);
+            return View(mealMenuAvailability);
         }
 
-        // POST: MealTypes/Delete/5
+        // POST: MealMenuAvailabilities/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var mealType = await _context.MealTypes.FindAsync(id);
-            _context.MealTypes.Remove(mealType);
+            var mealMenuAvailability = await _context.MealMenuAvailabilities.FindAsync(id);
+            _context.MealMenuAvailabilities.Remove(mealMenuAvailability);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool MealTypeExists(int id)
+        private bool MealMenuAvailabilityExists(int id)
         {
-            return _context.MealTypes.Any(e => e.Id == id);
+            return _context.MealMenuAvailabilities.Any(e => e.Id == id);
         }
     }
 }

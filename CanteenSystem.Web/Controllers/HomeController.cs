@@ -68,6 +68,7 @@ namespace CanteenSystem.Web.Controllers
 
 
         [Route("EditUserProfile/{id}")]
+        [HttpGet]
         public async Task<IActionResult> EditUserProfile(int? id)
         {
             if (id == null)

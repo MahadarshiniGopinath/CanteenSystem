@@ -6,92 +6,93 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CanteenSystem.Web.Models;
-using Microsoft.AspNetCore.Authorization;
-using CanteenSystem.Web.ViewModel;
-using IdentityModel;
 
 namespace CanteenSystem.Web.Controllers
 {
-    [ClaimRequirement(JwtClaimTypes.Role, "Admin")]
-    public class MealTypesController : Controller
+    public class OrdersController : Controller
     {
         private readonly CanteenSystemDbContext _context;
 
-        public MealTypesController(CanteenSystemDbContext context)
+        public OrdersController(CanteenSystemDbContext context)
         {
             _context = context;
         }
 
-        // GET: MealTypes
+        // GET: Orders
         public async Task<IActionResult> Index()
         {
-            return View(await _context.MealTypes.ToListAsync());
+            var canteenSystemDbContext = _context.Orders.Include(o => o.UserProfile);
+            return View(await canteenSystemDbContext.ToListAsync());
         }
 
-        // GET: MealTypes/Details/5
-        public async Task<IActionResult> Details(int? id)
+        // GET: Orders/Details/5
+        public async Task<IActionResult> Details(long? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var mealType = await _context.MealTypes
+            var order = await _context.Orders
+                .Include(o => o.UserProfile)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (mealType == null)
+            if (order == null)
             {
                 return NotFound();
             }
 
-            return View(mealType);
+            return View(order);
         }
 
-        // GET: MealTypes/Create
+        // GET: Orders/Create
         public IActionResult Create()
         {
+            ViewData["UserProfileId"] = new SelectList(_context.UserProfiles, "Id", "Department");
             return View();
         }
 
-        // POST: MealTypes/Create
+        // POST: Orders/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] MealType mealType)
+        public async Task<IActionResult> Create([Bind("Id,OrderReference,UserProfileId,TotalPrice,CreatedDate,UpdatedDate")] Order order)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(mealType);
+                _context.Add(order);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(mealType);
+            ViewData["UserProfileId"] = new SelectList(_context.UserProfiles, "Id", "Department", order.UserProfileId);
+            return View(order);
         }
 
-        // GET: MealTypes/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        // GET: Orders/Edit/5
+        public async Task<IActionResult> Edit(long? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var mealType = await _context.MealTypes.FindAsync(id);
-            if (mealType == null)
+            var order = await _context.Orders.FindAsync(id);
+            if (order == null)
             {
                 return NotFound();
             }
-            return View(mealType);
+            ViewData["UserProfileId"] = new SelectList(_context.UserProfiles, "Id", "Department", order.UserProfileId);
+            return View(order);
         }
 
-        // POST: MealTypes/Edit/5
+        // POST: Orders/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] MealType mealType)
+        public async Task<IActionResult> Edit(long id, [Bind("Id,OrderReference,UserProfileId,TotalPrice,CreatedDate,UpdatedDate")] Order order)
         {
-            if (id != mealType.Id)
+            if (id != order.Id)
             {
                 return NotFound();
             }
@@ -100,12 +101,12 @@ namespace CanteenSystem.Web.Controllers
             {
                 try
                 {
-                    _context.Update(mealType);
+                    _context.Update(order);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!MealTypeExists(mealType.Id))
+                    if (!OrderExists(order.Id))
                     {
                         return NotFound();
                     }
@@ -116,41 +117,43 @@ namespace CanteenSystem.Web.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(mealType);
+            ViewData["UserProfileId"] = new SelectList(_context.UserProfiles, "Id", "Department", order.UserProfileId);
+            return View(order);
         }
 
-        // GET: MealTypes/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        // GET: Orders/Delete/5
+        public async Task<IActionResult> Delete(long? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var mealType = await _context.MealTypes
+            var order = await _context.Orders
+                .Include(o => o.UserProfile)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (mealType == null)
+            if (order == null)
             {
                 return NotFound();
             }
 
-            return View(mealType);
+            return View(order);
         }
 
-        // POST: MealTypes/Delete/5
+        // POST: Orders/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(long id)
         {
-            var mealType = await _context.MealTypes.FindAsync(id);
-            _context.MealTypes.Remove(mealType);
+            var order = await _context.Orders.FindAsync(id);
+            _context.Orders.Remove(order);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool MealTypeExists(int id)
+        private bool OrderExists(long id)
         {
-            return _context.MealTypes.Any(e => e.Id == id);
+            return _context.Orders.Any(e => e.Id == id);
         }
     }
 }
