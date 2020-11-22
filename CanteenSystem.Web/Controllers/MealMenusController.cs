@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CanteenSystem.Web.Models;
 using IdentityModel;
+using CanteenSystem.Web.ViewModel;
 
 namespace CanteenSystem.Web.Controllers
-{
-    [ClaimRequirement(JwtClaimTypes.Role, "Admin")]
+{ 
     public class MealMenusController : Controller
     {
         private readonly CanteenSystemDbContext _context;
@@ -163,6 +163,62 @@ namespace CanteenSystem.Web.Controllers
         private bool MealMenuExists(int id)
         {
             return _context.MealMenus.Any(e => e.Id == id);
+        }
+
+        // GET: MealMenus
+        public async Task<IActionResult> StudentMealList(DateTime? selectedDate = null, int? mealType = null, int? discount = null)
+        {
+            var canteenSystemDbContext = _context.MealMenus.Include(m => m.Discount).Include(m => m.MealType)
+                .Include(m => m.MealMenuAvailabilities);
+            var listOfValues = await canteenSystemDbContext.ToListAsync();
+           
+            listOfValues = !selectedDate.HasValue?
+                listOfValues.Where(x => x.MealMenuAvailabilities.Any(y => y.AvailabilityDate.Date >= DateTime.Now.Date)).ToList():
+            listOfValues.Where(x => x.MealMenuAvailabilities.Any(y => y.AvailabilityDate.Date == selectedDate.Value.Date)).ToList();
+            var availableMealTypes = _context.MealTypes.ToList().Select(x => new SelectListItem
+            {
+                Text = x.Name,
+                Value = x.Id.ToString()
+            });
+            if (discount != null)
+            {
+                listOfValues = listOfValues.Where(y => y.DiscountId == discount).ToList();
+            }
+            if (mealType != null)
+            {
+                listOfValues = listOfValues.Where(y => y.MealTypeId == mealType).ToList();
+            }
+            var mealMenuCollection = new MealMenuCollectionModel
+            {
+                AvailableMealTypes = new SelectList(availableMealTypes,"Text","Value"),
+                MealMenuModels = listOfValues.SelectMany(x => x.MealMenuAvailabilities).Select(x => {
+                    decimal price = 0;
+                    decimal? wasPrice = null;
+
+                    if (x.MealMenu.DiscountId != null && x.AvailabilityDate >= x.MealMenu.Discount.ValidFromDate
+                     && (x.MealMenu.Discount.ValidToDate == null || x.AvailabilityDate <= x.MealMenu.Discount.ValidToDate))
+                    {
+                        price = (decimal)((x.MealMenu.Price * x.MealMenu.Discount.DiscountPercentage) / 100);
+                        wasPrice = (decimal)x.MealMenu.Price;
+                    }
+                    else {
+                        price = (decimal)x.MealMenu.Price;
+                    }
+                    
+                    return new MealMenuModel
+                    {
+                       Id = x.MealMenuId,
+                       Name =x.MealMenu.MealName,
+                       MealType = x.MealMenu.MealType.Name,
+                       AvailableDate =x.AvailabilityDate,
+                       Price = price,
+                       WasPrice = wasPrice
+                    };
+                }).ToList()
+            };
+       
+             
+            return View(mealMenuCollection);
         }
     }
 }

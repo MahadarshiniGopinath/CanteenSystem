@@ -1,0 +1,65 @@
+﻿@model CanteenSystem.Web.ViewModel.MealMenuCollectionModel
+
+@{
+    ViewData["Title"] = "Available Meals";
+}
+
+<h1>Meal menu</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+<select asp-for="AvailableMealTypes" class="form-control" asp-items="ViewBag.DiscountId">
+    <option>Lunch</option>
+    <option>Beakfast</option>
+    <option>Snacks</option>
+    <option>Dinner</option>
+</select>
+ 
+<input asp-for="SelectedAvailableDate" class="form-control" />
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Name
+            </th>
+            <th>
+                Price
+            </th>
+            <th>
+                AvailableDate
+            </th>
+            <th>
+                MealType
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.MealMenuModels)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @if (item.WasPrice != default)
+                    {
+                        <span style=" text-decoration: line-through;"> item.WasPrice</span>
+                    }
+                    <span> @item.Price</span>
+                </td>
+                <td>
+                    @item.AvailableDate
+                </td>
+                <td>
+                    @item.MealType
+                </td>
+                <td>
+                    <a asp-action="Cart" asp-route-id="@item.Id">Add to Card</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
