@@ -111,6 +111,23 @@ namespace CanteenSystem.Web.Controllers
 
             return View(model);
         }
+        [Route("AddParentFund/{id}/{userProfileId}")]
+        public async Task<IActionResult> AddParentFund(int id, int userProfileId)
+        {
+            var card = await _context.Cards
+               .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (card == null)
+            {
+                return NotFound();
+            }
+
+            return View(new CardModel()
+            {
+                CardId = card.Id,
+                UserProfileId = userProfileId
+            });
+        }
 
 
         [HttpPost]

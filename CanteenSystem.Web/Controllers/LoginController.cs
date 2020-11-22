@@ -69,7 +69,7 @@ namespace CanteenSystem.Web.Controllers
                     var identity = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
                     identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
                     identity.AddClaim(new Claim(ClaimTypes.UserData, userProfile.Id.ToString()));
-                    identity.AddClaim(new Claim(ClaimTypes.Name, userProfile.Name));
+                    identity.AddClaim(new Claim(ClaimTypes.Name, userProfile.Name)); 
                     var userRoles = await userManager.GetRolesAsync(user);
 
                     var role = userRoles.FirstOrDefault();
@@ -167,7 +167,7 @@ namespace CanteenSystem.Web.Controllers
                 _context.Add(user);
                 _context.SaveChanges();
 
-                if (model.IsParent)
+                if (!model.IsParent)
                 {
                     var card = new Card()
                     {
@@ -177,7 +177,9 @@ namespace CanteenSystem.Web.Controllers
                         UserProfileId = user.Id
                     };
                     _context.Add(card);
-
+                }
+                else
+                {
 
                     var parentMapping = new ParentMapping()
                     {
@@ -185,9 +187,9 @@ namespace CanteenSystem.Web.Controllers
                         ParentId = user.Id
                     };
                     _context.Add(parentMapping);
-                    _context.SaveChanges();
-                }
 
+                }
+                _context.SaveChanges();
             }
             if (!model.IsParent)
             {
@@ -201,8 +203,6 @@ namespace CanteenSystem.Web.Controllers
             }
             else
             {
-
-
                 if (!await roleManager.RoleExistsAsync(UserRoles.Parents))
                     await roleManager.CreateAsync(new IdentityRole(UserRoles.Parents));
 

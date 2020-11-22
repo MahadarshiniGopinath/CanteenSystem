@@ -12,17 +12,23 @@
     var userClaimId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.UserData);
     var userId = userClaimId == null ? 0 : Convert.ToInt32(userClaimId.Value);
 }
-
-<div class="text-center">
-    <h1 class="display-4">Welcome To Canteen System</h1>
+<style>
+    .home-wrapper p{
+        margin-top: 50px;
+    }
+</style>
+<div class="text-center home-wrapper" >
+    <h1 class="display-4">Welcome To Meal booking System</h1>
     <!-- Small boxes (Stat box) -->
+    @if (SignInManager.IsSignedIn(User))
+    {
     <div class="row">
 
         @if (SignInManager.IsSignedIn(User) && User.Claims.Any(c => c.Type == JwtClaimTypes.Role && c.Value == "Student"))
         {
             <div class="col-lg-6 col-6">
                 <!-- small box -->
-                <div class="small-box bg-gradient-green" style="margin: 30px 100px">
+                <div class="small-box bg-gradient-green" style="margin: 30px 60px">
                     <div class="inner" style="height:200px">
                         <h3>Orders</h3>
 
@@ -38,11 +44,11 @@
 
             <div class="col-lg-6 col-6">
                 <!-- small box -->
-                <div class="small-box bg-gradient-teal" style="margin: 30px 100px">
+                <div class="small-box bg-gradient-teal" style="margin: 30px 60px">
                     <div class="inner" style="height:200px">
                         <h3> Balance</h3>
 
-                        <p>View Available Fund</p>
+                        <p>View your Fund details</p>
                     </div>
                     <div class="icon">
                         <i class="ion ion-stats-bars"></i>
@@ -54,11 +60,11 @@
             <!-- ./col -->
             <div class="col-lg-6 col-6">
                 <!-- small box -->
-                <div class="small-box bg-gradient-warning" style="margin: 30px 100px">
+                <div class="small-box bg-gradient-warning" style="margin: 30px 60px">
                     <div class="inner" style="height:200px">
-                        <h3>View Profile</h3>
+                        <h3>Profile</h3>
 
-                        <p>Personal Information</p>
+                        <p>View your Personal Information</p>
                     </div>
                     <div class="icon">
                         <i class="ion ion-person-add"></i>
@@ -70,11 +76,11 @@
             <!-- ./col -->
             <div class="col-lg-6 col-6">
                 <!-- small box -->
-                <div class="small-box bg-gradient-cyan" style="margin: 30px 100px">
+                <div class="small-box bg-gradient-cyan" style="margin: 30px 60px">
                     <div class="inner" style="height:200px">
                         <h3>Cart</h3>
 
-                        <p>View Cart</p>
+                        <p>View your Cart</p>
                     </div>
                     <div class="icon">
                         <i class="ion ion-pie-graph"></i>
@@ -87,11 +93,11 @@
         {
             <div class="col-lg-6 col-6">
                 <!-- small box -->
-                <div class="small-box bg-gradient-green" style="margin: 30px 100px">
+                <div class="small-box bg-gradient-green" style="margin: 30px 60px">
                     <div class="inner" style="height:200px">
                         <h3>Orders</h3>
 
-                        <p>Available Orders</p>
+                        <p>View all Available Orders</p>
                     </div>
                     <div class="icon">
                         <i class="ion ion-bag"></i>
@@ -102,11 +108,11 @@
             <!-- ./col -->
             <div class="col-lg-6 col-6">
                 <!-- small box -->
-                <div class="small-box bg-gradient-warning" style="margin: 30px 100px">
+                <div class="small-box bg-gradient-warning" style="margin: 30px 60px">
                     <div class="inner" style="height:200px">
-                        <h3>View Profile</h3>
+                        <h3> Profile</h3>
 
-                        <p>Personal Information</p>
+                        <p>View your Personal Information</p>
                     </div>
                     <div class="icon">
                         <i class="ion ion-person-add"></i>
@@ -120,11 +126,11 @@
         {
             <div class="col-lg-6 col-6">
                 <!-- small box -->
-                <div class="small-box bg-gradient-warning" style="margin: 30px 100px">
+                <div class="small-box bg-gradient-warning" style="margin: 30px 60px">
                     <div class="inner" style="height:200px">
-                        <h3>View Profile</h3>
+                        <h3> Profile</h3>
 
-                        <p>Personal Information</p>
+                        <p>View your Personal Information</p>
                     </div>
                     <div class="icon">
                         <i class="ion ion-person-add"></i>
@@ -135,11 +141,11 @@
 
             <div class="col-lg-6 col-6">
                 <!-- small box -->
-                <div class="small-box bg-gradient-teal" style="margin: 30px 100px">
+                <div class="small-box bg-gradient-teal" style="margin: 30px 60px">
                     <div class="inner" style="height:200px">
                         <h3> Balance</h3>
 
-                        <p>View your child</p>
+                        <p>View your child's Account Balance</p>
                     </div>
                     <div class="icon">
                         <i class="ion ion-stats-bars"></i>
@@ -151,4 +157,8 @@
         <!-- ./col -->
     </div>
     <!-- /.row -->
+    } 
+    else { 
+       <a class="btn btn-primary" href="/login">Go to login</a>
+    }
 </div>

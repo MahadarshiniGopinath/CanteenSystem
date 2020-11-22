@@ -162,8 +162,7 @@ namespace CanteenSystem.Web.Models
             });
             modelBuilder.Entity<UserProfile>(entity =>
             {
-                entity.Property(e => e.Department)
-                    .IsRequired()
+                entity.Property(e => e.Department) 
                     .HasMaxLength(500);
 
                 entity.Property(e => e.EmailAddress)

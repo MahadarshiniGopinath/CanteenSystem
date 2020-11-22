@@ -1,8 +1,21 @@
 ﻿@model CanteenSystem.Web.Models.UserModel
 
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@using Microsoft.AspNetCore.Authorization
+@using IdentityModel;
+@inject IAuthorizationService AuthorizationService
+@inject UserManager<ApplicationUser> UserManager
 @{
     ViewData["Title"] = "Details";
-}
+    var isParent = SignInManager.IsSignedIn(User) &&
+         User.Claims.Any(c => c.Type == JwtClaimTypes.Role && c.Value == "Parent");
+    var isAdmin = SignInManager.IsSignedIn(User) &&
+       User.Claims.Any(c => c.Type == JwtClaimTypes.Role && c.Value == "Admin");
+    var isStudent = SignInManager.IsSignedIn(User) &&
+      User.Claims.Any(c => c.Type == JwtClaimTypes.Role && c.Value == "Student");
+
+    }
 
 <h1>Details</h1>
 
@@ -22,24 +35,28 @@
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.EmailAddress)
         </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.RollNumber)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.RollNumber)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Department)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Department)
-        </dd>
+        @if (isStudent)
+        {
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.RollNumber)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.RollNumber)
+            </dd>
+
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Department)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Department)
+            </dd>
+        }
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.IsVerified)
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.IsVerified)
-        </dd>  
+        </dd>
     </dl>
 </div>
 <div>
