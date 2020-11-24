@@ -4,14 +4,16 @@ using CanteenSystem.Web.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CanteenSystem.Web.Migrations
 {
     [DbContext(typeof(CanteenSystemDbContext))]
-    partial class CanteenSystemDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201123162506_s")]
+    partial class s
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

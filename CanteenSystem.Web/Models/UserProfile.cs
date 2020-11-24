@@ -16,6 +16,7 @@ namespace CanteenSystem.Web.Models
         public virtual ICollection<ParentMapping> StudentUserProfiles { get; set; }
         public virtual ICollection<ParentMapping> ParentUserProfiles { get; set; }
         public virtual ICollection<Card> Cards { get; set; }
+        public virtual ICollection<Cart> Carts { get; set; }
 
     }
 

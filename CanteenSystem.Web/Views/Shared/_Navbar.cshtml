@@ -1,10 +1,19 @@
 ﻿
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<ApplicationUser> SignInManager
-@using Microsoft.AspNetCore.Authorization 
+@using Microsoft.AspNetCore.Authorization
 @using IdentityModel;
 @inject IAuthorizationService AuthorizationService
+@inject UserManager<ApplicationUser> UserManager 
+@using System.Security.Claims;
+@inject IAuthorizationService AuthorizationService
 @inject UserManager<ApplicationUser> UserManager
+@{
+    
+    var userClaimId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.UserData);
+    var userId = userClaimId == null ? 0 : Convert.ToInt32(userClaimId.Value);
+}
+
 <!-- Navbar -->
 <nav class="main-header navbar navbar-expand navbar-white navbar-light">
     <!-- Left navbar links -->
@@ -15,14 +24,17 @@
         <li class="nav-item d-none d-sm-inline-block">
             <a href="/" class="nav-link">Home</a>
         </li>
-        <li class="nav-item">
-            <a href="/mealmenus/studentMeallist" class="nav-link">
+        @if (SignInManager.IsSignedIn(User) && User.Claims.Any(c => c.Type == JwtClaimTypes.Role && c.Value == "Student"))
+        {
+            <li class="nav-item">
+                <a href="/carts/Index?userProfileId=@(userId)" class="nav-link">
 
-                <p>
-                   Meals
-                </p>
-            </a>
-        </li>
+                    <p>
+                        Cart
+                    </p>
+                </a>
+            </li>
+        }
         @if (SignInManager.IsSignedIn(User) && User.Claims.Any(c => c.Type == JwtClaimTypes.Role && c.Value == "Admin"))
         {
             <li class="nav-item">
@@ -76,7 +88,7 @@
         }
 
 
-    </ul> 
+    </ul>
     <ul class="navbar-nav ml-auto">
         @if (SignInManager.IsSignedIn(User))
         {

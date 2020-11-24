@@ -1,28 +1,64 @@
 ﻿@model CanteenSystem.Web.ViewModel.MealMenuCollectionModel
-
+@using Microsoft.AspNetCore.Identity
+ 
+@inject SignInManager<ApplicationUser> SignInManager
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims;
+@inject IAuthorizationService AuthorizationService
+@inject UserManager<ApplicationUser> UserManager
 @{
     ViewData["Title"] = "Available Meals";
+    var userClaimId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.UserData);
+    var userId = userClaimId == null ? 0 : Convert.ToInt32(userClaimId.Value);
 }
+<h1>Available meal menu</h1>
+<hr />
+<form class="form-inline">
 
-<h1>Meal menu</h1>
+    <div class="form-group">
+        <label for="staticEmail" class="col-sm-6 col-form-label">Meal type:</label>
+        <div class="col-sm-6">
+            @Html.DropDownListFor(m => m.SelectedMealType, new SelectList(Model.AvailableMealTypes.Items, "Value", "Text"),
+                   "Select Meal Type", new { @class = "form-control", onchange = @"form.submit();" })
+        </div>
+    </div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+    <div class="form-group">
+        <label for="staticEmail" class="col-sm-6 col-form-label">Availability:</label>
+        <div class="col-sm-6">
 
-<select asp-for="AvailableMealTypes" class="form-control" asp-items="ViewBag.DiscountId">
-    <option>Lunch</option>
-    <option>Beakfast</option>
-    <option>Snacks</option>
-    <option>Dinner</option>
-</select>
- 
-<input asp-for="SelectedAvailableDate" class="form-control" />
+            <div class="input-group date" data-provide="datepicker">
+                <input type="text" name="SelectedAvailableDate" id="SelectedAvailableDate" readonly onchange="form.submit();" class="form-control" autocomplete="off"
+                       value="@(Model.SelectedAvailableDate == default ? string.Empty: Model.SelectedAvailableDate.Value.ToString())">
+                <div class="input-group-addon">
+                    <span class="glyphicon glyphicon-th"></span>
+                </div>
+            </div>
+            <script>
+                $("#datepicker").datepicker("setDate", new Date());
+                $('#datepicker').datepicker({
+                    weekStart: 1,
+                    daysOfWeekHighlighted: "6,0",
+                    autoclose: true,
+                    todayHighlight: true,
+                });
+            </script>
+        </div>
+    </div>
+
+
+</form>
+<br />
+<br />
+
 <table class="table">
     <thead>
         <tr>
             <th>
                 Name
+            </th>
+            <th>
+                Discount
             </th>
             <th>
                 Price
@@ -37,29 +73,56 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.MealMenuModels)
+        @if (Model.MealMenuModels == null || !Model.MealMenuModels.Any())
         {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Name)
-                </td>
-                <td>
-                    @if (item.WasPrice != default)
-                    {
-                        <span style=" text-decoration: line-through;"> item.WasPrice</span>
-                    }
-                    <span> @item.Price</span>
-                </td>
-                <td>
-                    @item.AvailableDate
-                </td>
-                <td>
-                    @item.MealType
-                </td>
-                <td>
-                    <a asp-action="Cart" asp-route-id="@item.Id">Add to Card</a>
+            <tr class="no-record-found">
+                <td colspan="4">
+                    <span> No records found</span>
+
                 </td>
             </tr>
         }
+        else
+        {
+            foreach (var item in Model.MealMenuModels)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @(item.DiscountName != null ? item.DiscountName: "N/A")
+                    </td>
+                    <td>
+                        @if (item.WasPrice != default)
+                        {
+                            <span style=" text-decoration: line-through;"> £ @item.WasPrice</span>
+                        }
+                        <span> £@item.Price</span>
+                    </td>
+                    <td>
+                        @item.AvailableDate.Date.ToString("dd/MM/yyyy")
+                    </td>
+                    <td>
+                        @item.MealType
+                    </td>
+                    <td>
+                        <a onclick="addToCart(@(item.Id),@(item.AvailabililtyDateId),@(userId))" href="#">Add to Card</a>
+                    </td>
+                </tr>
+            }
+        }
     </tbody>
 </table>
+
+<script>
+
+    function addToCart(menuId, availabilityDateId, userId) {
+        $.ajax({
+            method: "post",
+            url: "/carts/AddToCart/" + menuId + "/" + availabilityDateId + "/" + userId, success: function (result) {
+
+            }
+        });
+    } 
+</script>

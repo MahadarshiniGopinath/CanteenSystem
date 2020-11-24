@@ -15,6 +15,8 @@ namespace CanteenSystem.Web.Models
         public decimal UpdatedDate { get; set; }
         public DateTime MealAvailableDate { get; set; }
 
+        public int UserProfileId { get; set; }
+        public virtual UserProfile UserProfile { get; set; }
         public virtual MealMenu MealMenu { get; set; }
     }
 }

@@ -1,0 +1,85 @@
+﻿@model IEnumerable<CanteenSystem.Web.Models.Cart>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Quantity)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CreatedDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UpdatedDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MealAvailableDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UserProfile)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MealMenu)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model == null || !Model.Any())
+        {
+            <tr class="no-record-found">
+                <td colspan="4">
+                    <span> No records found</span>
+
+                </td>
+            </tr>
+        }
+        else
+        {
+
+        foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Quantity)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Price)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CreatedDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UpdatedDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.MealAvailableDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UserProfile.EmailAddress)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.MealMenu.MealName)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+        }
+    </tbody>
+</table>

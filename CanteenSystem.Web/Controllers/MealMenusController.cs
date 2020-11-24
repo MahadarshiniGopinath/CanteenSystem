@@ -166,58 +166,63 @@ namespace CanteenSystem.Web.Controllers
         }
 
         // GET: MealMenus
-        public async Task<IActionResult> StudentMealList(DateTime? selectedDate = null, int? mealType = null, int? discount = null)
+        public async Task<IActionResult> StudentMealList(MealMenuCollectionModel model = null)
         {
             var canteenSystemDbContext = _context.MealMenus.Include(m => m.Discount).Include(m => m.MealType)
                 .Include(m => m.MealMenuAvailabilities);
             var listOfValues = await canteenSystemDbContext.ToListAsync();
            
-            listOfValues = !selectedDate.HasValue?
-                listOfValues.Where(x => x.MealMenuAvailabilities.Any(y => y.AvailabilityDate.Date >= DateTime.Now.Date)).ToList():
-            listOfValues.Where(x => x.MealMenuAvailabilities.Any(y => y.AvailabilityDate.Date == selectedDate.Value.Date)).ToList();
             var availableMealTypes = _context.MealTypes.ToList().Select(x => new SelectListItem
             {
                 Text = x.Name,
                 Value = x.Id.ToString()
             });
-            if (discount != null)
+            
+            if (model != null && model.SelectedMealType != null)
             {
-                listOfValues = listOfValues.Where(y => y.DiscountId == discount).ToList();
+                listOfValues = listOfValues.Where(y => y.MealTypeId == model.SelectedMealType).ToList();
             }
-            if (mealType != null)
-            {
-                listOfValues = listOfValues.Where(y => y.MealTypeId == mealType).ToList();
-            }
+
+            var mealMenuList = listOfValues.SelectMany(x => x.MealMenuAvailabilities).Select(x => {
+                decimal price = 0;
+                decimal? wasPrice = null;
+
+                if (x.MealMenu.DiscountId != null && x.AvailabilityDate >= x.MealMenu.Discount.ValidFromDate
+                 && (x.MealMenu.Discount.ValidToDate == null || x.AvailabilityDate <= x.MealMenu.Discount.ValidToDate))
+                {
+                    price = (decimal)x.MealMenu.Price - ((decimal)((x.MealMenu.Price * x.MealMenu.Discount.DiscountPercentage) / 100));
+                    wasPrice = (decimal)x.MealMenu.Price;
+                }
+                else
+                {
+                    price = (decimal)x.MealMenu.Price;
+                }
+
+                return new MealMenuModel
+                {
+                    Id = x.MealMenuId,
+                    Name = x.MealMenu.MealName,
+                    MealType = x.MealMenu.MealType.Name,
+                    AvailableDate = x.AvailabilityDate,
+                    Price = price,
+                    DiscountName = x.MealMenu.Discount?.Name,
+                    WasPrice = wasPrice,
+                    AvailabililtyDateId = x.Id
+                };
+            }).ToList();
+            mealMenuList = model == null || !model.SelectedAvailableDate.HasValue ?
+                   mealMenuList.Where(y => y.AvailableDate.Date >= DateTime.Now.Date).ToList() :
+               mealMenuList.Where(y => y.AvailableDate.Date == model.SelectedAvailableDate.Value.Date).ToList();
+
             var mealMenuCollection = new MealMenuCollectionModel
             {
-                AvailableMealTypes = new SelectList(availableMealTypes,"Text","Value"),
-                MealMenuModels = listOfValues.SelectMany(x => x.MealMenuAvailabilities).Select(x => {
-                    decimal price = 0;
-                    decimal? wasPrice = null;
-
-                    if (x.MealMenu.DiscountId != null && x.AvailabilityDate >= x.MealMenu.Discount.ValidFromDate
-                     && (x.MealMenu.Discount.ValidToDate == null || x.AvailabilityDate <= x.MealMenu.Discount.ValidToDate))
-                    {
-                        price = (decimal)((x.MealMenu.Price * x.MealMenu.Discount.DiscountPercentage) / 100);
-                        wasPrice = (decimal)x.MealMenu.Price;
-                    }
-                    else {
-                        price = (decimal)x.MealMenu.Price;
-                    }
-                    
-                    return new MealMenuModel
-                    {
-                       Id = x.MealMenuId,
-                       Name =x.MealMenu.MealName,
-                       MealType = x.MealMenu.MealType.Name,
-                       AvailableDate =x.AvailabilityDate,
-                       Price = price,
-                       WasPrice = wasPrice
-                    };
-                }).ToList()
+                AvailableMealTypes = new SelectList(availableMealTypes, "Value", "Text"),
+                MealMenuModels = mealMenuList,
+                SelectedMealType= model?.SelectedMealType,
+                SelectedAvailableDate = model?.SelectedAvailableDate,
             };
-       
-             
+           
+
             return View(mealMenuCollection);
         }
     }
