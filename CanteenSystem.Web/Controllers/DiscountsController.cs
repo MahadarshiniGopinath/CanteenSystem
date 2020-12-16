@@ -5,27 +5,26 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using CanteenSystem.Web.Models;
 using IdentityModel;
+using CanteenSystem.Dto.Models;
+using CanteenSystem.Dal; 
 
 namespace CanteenSystem.Web.Controllers
 {
-    [ClaimRequirement(JwtClaimTypes.Role, "Admin")]
     public class DiscountsController : Controller
     {
-        private readonly CanteenSystemDbContext _context;
-
-        public DiscountsController(CanteenSystemDbContext context)
+        private readonly CanteenSystemDbContext Context; 
+        public DiscountsController(CanteenSystemDbContext context )
         {
-            _context = context;
+            Context = context; 
         }
+
 
         // GET: Discounts
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Discounts.ToListAsync());
-        }
-
+            return View(await Context.Discounts.ToListAsync());
+        } 
         // GET: Discounts/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -34,7 +33,7 @@ namespace CanteenSystem.Web.Controllers
                 return NotFound();
             }
 
-            var discount = await _context.Discounts
+            var discount = await Context.Discounts
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (discount == null)
             {
@@ -59,8 +58,8 @@ namespace CanteenSystem.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(discount);
-                await _context.SaveChangesAsync();
+                Context.Add(discount);
+                await Context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(discount);
@@ -74,7 +73,7 @@ namespace CanteenSystem.Web.Controllers
                 return NotFound();
             }
 
-            var discount = await _context.Discounts.FindAsync(id);
+            var discount = await Context.Discounts.FindAsync(id);
             if (discount == null)
             {
                 return NotFound();
@@ -98,8 +97,8 @@ namespace CanteenSystem.Web.Controllers
             {
                 try
                 {
-                    _context.Update(discount);
-                    await _context.SaveChangesAsync();
+                    Context.Update(discount);
+                    await Context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -125,7 +124,7 @@ namespace CanteenSystem.Web.Controllers
                 return NotFound();
             }
 
-            var discount = await _context.Discounts
+            var discount = await Context.Discounts
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (discount == null)
             {
@@ -140,15 +139,16 @@ namespace CanteenSystem.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var discount = await _context.Discounts.FindAsync(id);
-            _context.Discounts.Remove(discount);
-            await _context.SaveChangesAsync();
+            var discount = await Context.Discounts.FindAsync(id);
+            Context.Discounts.Remove(discount);
+            await Context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool DiscountExists(int id)
         {
-            return _context.Discounts.Any(e => e.Id == id);
+            return Context.Discounts.Any(e => e.Id == id);
         }
     }
 }
+

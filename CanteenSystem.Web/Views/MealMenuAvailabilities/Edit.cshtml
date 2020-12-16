@@ -1,4 +1,4 @@
-﻿@model CanteenSystem.Web.Models.MealMenuAvailability
+﻿@model CanteenSystem.Dto.Models.MealMenuAvailability
 
 @{
     ViewData["Title"] = "Edit";
@@ -22,6 +22,11 @@
                 <label asp-for="AvailabilityDate" class="control-label"></label>
                 <input asp-for="AvailabilityDate" class="form-control" />
                 <span asp-validation-for="AvailabilityDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Quantity" class="control-label"></label>
+                <input asp-for="Quantity" class="form-control" />
+                <span asp-validation-for="Quantity" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

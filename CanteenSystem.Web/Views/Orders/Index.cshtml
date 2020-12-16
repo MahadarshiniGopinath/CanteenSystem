@@ -1,58 +1,68 @@
-﻿@model IEnumerable<CanteenSystem.Web.Models.Order>
+﻿@model IEnumerable<CanteenSystem.Dto.Models.Order>
 
 @{
     ViewData["Title"] = "Orders";
 }
 
 <h1>Available orders</h1>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.OrderReference)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TotalPrice)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreatedDate)
-            </th>
-            <th>
-                Student Name
-            </th>
-            <th>
-                Student Rollnumber
-            </th>
-            <th>
-                View detail
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
+<div id="style-7" class="scrollbar">
+    <table class="table">
+        <thead>
             <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.OrderReference)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.TotalPrice)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.CreatedDate)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.UserProfile.StudentUserProfiles.FirstOrDefault().StudentUserProfile.Name)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.UserProfile.StudentUserProfiles.FirstOrDefault().StudentUserProfile.RollNumber)
-                </td>
-                <td>
-                    <a asp-action="Index" asp-controller="OrderItems" asp-route-id="@item.Id">Details</a>
-                </td>
+                <th>
+                    @Html.DisplayNameFor(model => model.OrderReference)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.TotalPrice)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.CreatedDate)
+                </th>
+                <th>
+                    Student Name
+                </th>
+                <th>
+                    Student Rollnumber
+                </th>
+                <th>
+                    Is Paid
+                </th>
+                <th>
+                    View detail
+                </th>
+                <th></th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.OrderReference)
+                    </td>
+                    <td>
+                        £ @Html.DisplayFor(modelItem => item.TotalPrice)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.CreatedDate.Date)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.UserProfile.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.UserProfile.RollNumber)
+                    </td>
+                    <td>
+                        @(item.Payments != null && item.Payments.Any() ?"Yes":"No")
+                    </td>
+                    <td>
+                        <a href="/OrderItems/Index/@item.Id">Details</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    </div>
+    <div class="text-center">
+        <a class="btn btn-default" href="/home">Go to Home</a>
+    </div>

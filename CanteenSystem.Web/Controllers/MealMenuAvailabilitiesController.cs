@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using CanteenSystem.Web.Models;
 using IdentityModel;
+using CanteenSystem.Dto.Models;
+using CanteenSystem.Dal;
 
 namespace CanteenSystem.Web.Controllers
 {
@@ -58,7 +59,7 @@ namespace CanteenSystem.Web.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,MealMenuId,AvailabilityDate")] MealMenuAvailability mealMenuAvailability)
+        public async Task<IActionResult> Create([Bind("Id,MealMenuId,AvailabilityDate,Quantity")] MealMenuAvailability mealMenuAvailability)
         {
             if (ModelState.IsValid)
             {
@@ -92,7 +93,7 @@ namespace CanteenSystem.Web.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,MealMenuId,AvailabilityDate")] MealMenuAvailability mealMenuAvailability)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,MealMenuId,AvailabilityDate,Quantity")] MealMenuAvailability mealMenuAvailability)
         {
             if (id != mealMenuAvailability.Id)
             {

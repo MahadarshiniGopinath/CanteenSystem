@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using CanteenSystem.Web.Models;
+using CanteenSystem.Dto.Models;
+using CanteenSystem.Dal;
 
 namespace CanteenSystem.Web.Controllers
 {
@@ -19,9 +20,13 @@ namespace CanteenSystem.Web.Controllers
         }
 
         // GET: OrderItems
+        [Route("/OrderItems/Index/{orderId}")]
         public async Task<IActionResult> Index(long? orderId)
         {
-            var canteenSystemDbContext = _context.OrderItems.Where(x=>x.OrderId == orderId)
+            var canteenSystemDbContext = orderId == null?
+                  _context.OrderItems
+                .Include(o => o.MealMenu).Include(o => o.Order):
+                _context.OrderItems.Where(x=>x.OrderId == orderId)
                 .Include(o => o.MealMenu).Include(o => o.Order);
             return View(await canteenSystemDbContext.ToListAsync());
         }

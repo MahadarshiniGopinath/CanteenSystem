@@ -5,12 +5,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using CanteenSystem.Web.Models;
 using IdentityModel;
 using CanteenSystem.Web.ViewModel;
+using CanteenSystem.Dto.Models;
+using CanteenSystem.Dal;
 
 namespace CanteenSystem.Web.Controllers
-{ 
+{
     public class MealMenusController : Controller
     {
         private readonly CanteenSystemDbContext _context;
@@ -61,7 +62,7 @@ namespace CanteenSystem.Web.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,MealName,MealTypeId,Price,DiscountId")] MealMenu mealMenu)
+        public async Task<IActionResult> Create([Bind("Id,MealName,MealTypeId,Price,DiscountId,ImageName")] MealMenu mealMenu)
         {
             if (ModelState.IsValid)
             {
@@ -97,7 +98,7 @@ namespace CanteenSystem.Web.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,MealName,MealTypeId,Price,DiscountId")] MealMenu mealMenu)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,MealName,MealTypeId,Price,DiscountId,ImageName")] MealMenu mealMenu)
         {
             if (id != mealMenu.Id)
             {
@@ -168,36 +169,49 @@ namespace CanteenSystem.Web.Controllers
         // GET: MealMenus
         public async Task<IActionResult> StudentMealList(MealMenuCollectionModel model = null)
         {
+            // Load meal list from the database including discount and meal type and its availabilities
             var canteenSystemDbContext = _context.MealMenus.Include(m => m.Discount).Include(m => m.MealType)
                 .Include(m => m.MealMenuAvailabilities);
+
+            // Covert to list
             var listOfValues = await canteenSystemDbContext.ToListAsync();
-           
+
+            // Get all mealtypes from the database and select as select list items
             var availableMealTypes = _context.MealTypes.ToList().Select(x => new SelectListItem
             {
                 Text = x.Name,
                 Value = x.Id.ToString()
             });
-            
+
+            // If input model is not null and selected meal type is not null then filter by selected meal type.
             if (model != null && model.SelectedMealType != null)
             {
                 listOfValues = listOfValues.Where(y => y.MealTypeId == model.SelectedMealType).ToList();
             }
 
-            var mealMenuList = listOfValues.SelectMany(x => x.MealMenuAvailabilities).Select(x => {
+            // based on the above filtered list get meal item where the quantity is greater than or equal to 1 and loop through each one and construct
+            // meal menu list to be displayed. 
+            var mealMenuList = listOfValues.SelectMany(x => x.MealMenuAvailabilities).Where(x=>x.Quantity>=1).Select(x => {
                 decimal price = 0;
                 decimal? wasPrice = null;
 
+                // Check if discount is not null and availability date is greater than Discount's ValidFromDate and
+                //  Discount's ValidToDate is not null  or availability date is lesser than or equal to Discount's ValidToDate 
                 if (x.MealMenu.DiscountId != null && x.AvailabilityDate >= x.MealMenu.Discount.ValidFromDate
                  && (x.MealMenu.Discount.ValidToDate == null || x.AvailabilityDate <= x.MealMenu.Discount.ValidToDate))
                 {
+                    // If yes then calculated discounted price eg: original price is £10  and discount price is 10% then calculated price would be
+                    //  £9.00 
                     price = (decimal)x.MealMenu.Price - ((decimal)((x.MealMenu.Price * x.MealMenu.Discount.DiscountPercentage) / 100));
                     wasPrice = (decimal)x.MealMenu.Price;
                 }
                 else
                 {
+                    // else no need to calculate price.
                     price = (decimal)x.MealMenu.Price;
                 }
 
+                // Create meal menu model
                 return new MealMenuModel
                 {
                     Id = x.MealMenuId,
@@ -207,13 +221,18 @@ namespace CanteenSystem.Web.Controllers
                     Price = price,
                     DiscountName = x.MealMenu.Discount?.Name,
                     WasPrice = wasPrice,
-                    AvailabililtyDateId = x.Id
+                    AvailabililtyDateId = x.Id,
+                    ImageName = x.MealMenu.ImageName
                 };
             }).ToList();
+
+            // if model is null or SelectedAvailableDate is not null then filter menu list where AvailableDate greater than current date
+            // or menu list where AvailableDate greater than selected available date.
             mealMenuList = model == null || !model.SelectedAvailableDate.HasValue ?
                    mealMenuList.Where(y => y.AvailableDate.Date >= DateTime.Now.Date).ToList() :
                mealMenuList.Where(y => y.AvailableDate.Date == model.SelectedAvailableDate.Value.Date).ToList();
 
+            // MealMenuCollectionModel  retun the result to UI.
             var mealMenuCollection = new MealMenuCollectionModel
             {
                 AvailableMealTypes = new SelectList(availableMealTypes, "Value", "Text"),

@@ -1,85 +1,185 @@
-﻿@model IEnumerable<CanteenSystem.Web.Models.Cart>
+﻿@model IEnumerable<CanteenSystem.Dto.Models.Cart>
+@using CanteenSystem.Dto.Models
+@using Microsoft.AspNetCore.Identity
 
+@inject SignInManager<ApplicationUser> SignInManager
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims;
+@inject IAuthorizationService AuthorizationService
+@inject UserManager<ApplicationUser> UserManager
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Cart";
+    var userClaimId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.UserData);
+    var userId = userClaimId == null ? 0 : Convert.ToInt32(userClaimId.Value);
+    var totalPrice = Model?.Sum(c => c.Quantity * c.Price);
+    var availableBalance = Model?.FirstOrDefault()?.UserProfile?.Cards?.FirstOrDefault().AvailableBalance;
+
 }
+<style>
+    td {
+        vertical-align: middle !important;
+    }
+</style>
+<h1>Your Cart</h1>
 
-<h1>Index</h1>
+<h6>Note: The system will automatically remove unavailable meal from the cart. </h6>
+@if (Model != null && Model.Any())
+{
+    <h3>Total price - £@(totalPrice)</h3>
+    @if (availableBalance == 0)
+    {
+        <h6>Note: Your available balance is zero. so, you can't order </h6>
+    }
+}
+<div class="alert " style="display:none" id="statusMessage"> </div>
+<div  id="style-7" class="scrollbar">
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Quantity)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreatedDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UpdatedDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.MealAvailableDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UserProfile)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.MealMenu)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model == null || !Model.Any())
-        {
-            <tr class="no-record-found">
-                <td colspan="4">
-                    <span> No records found</span>
-
-                </td>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Image
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.MealMenu)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Quantity)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Price)
+                </th>
+                <th>
+                    Total price
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.MealAvailableDate)
+                </th>
+                <th></th>
             </tr>
+        </thead>
+        <tbody>
+            @if (Model == null || !Model.Any())
+            {
+                <tr class="no-record-found">
+                    <td colspan="6">
+                        <span> No records found</span>
+
+                    </td>
+                </tr>
+            }
+            else
+            {
+
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (string.IsNullOrEmpty(item.MealMenu.ImageName))
+                            {
+                                <img src="/images/no-image.png" alt="Image name" height="60px" width="60px" />
+                            }
+                            else
+                            {
+                                <img src="/images/@item.MealMenu.ImageName" alt="Image name" height="60px" width="60px" />
+                            }
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.MealMenu.MealName)
+                        </td>
+                        <td>
+                            @Html.DropDownListFor(modelItem => item.Quantity, new SelectList(new List<SelectListItem> {
+                           new SelectListItem("1","1"),
+                           new SelectListItem("2","2"),
+                           new SelectListItem("3","3"),
+                           new SelectListItem("4","4")
+                    }, "Text", "Value"), new
+                            {
+                                onchange = @"updateQuantity(this.value" + "," + (item.Id) + ",'" + (item.MealMenu.MealName) + "')"
+                            })
+                        </td>
+                        <td>
+                            £@Html.DisplayFor(modelItem => item.Price)
+                        </td>
+
+                        <td>
+                            £@(item.Price * item.Quantity)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.MealAvailableDate)
+                        </td>
+
+                        <td>
+                            <a onclick="removeFromCart(@(item.Id),'@(item.MealMenu.MealName)')" href="#">Remove</a>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="text-center">
+        <a class="btn btn-primary" href="/home"> Go to home</a>
+    </div>
+}
+else
+{
+    <div class="text-center">
+        @if (availableBalance == 0)
+        {
+            <a type="button" disabled class="btn btn-primary" href="/carts/confirmOrderAndPayNow/@(userId)"> Confirm Order and Pay Now</a>
+            <a type="button" disabled class="btn btn-secondary" href="/carts/confirmOrderAndPayAtTill/@(userId)"> Confirm Order and Pay at Till</a>
         }
         else
         {
+            <a type="button" class="btn btn-primary" href="/carts/confirmOrderAndPayNow/@(userId)"> Confirm Order and Pay Now</a>
+            <a type="button" class="btn btn-secondary" href="/carts/confirmOrderAndPayAtTill/@(userId)"> Confirm Order and Pay at Till</a>
+        }
+    </div>
+}
+<script>function updateQuantity(selectedQuantity, cartId, menuName) {
+        $.ajax({
+            method: "post",
+            url: "/carts/UpdateCartQuantity/" + cartId + '/' + selectedQuantity,
+            success: function (result) {
+                $('#statusMessage').show();
+                if (result.status) {
 
-        foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Quantity)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Price)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.CreatedDate)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.UpdatedDate)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.MealAvailableDate)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.UserProfile.EmailAddress)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.MealMenu.MealName)
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                </td>
-            </tr>
-        }
-        }
-    </tbody>
-</table>
+                    $('#statusMessage').addClass("alert-success  w-100");
+                    $('#statusMessage').html("<span>" + menuName + " - " + result.message + "</span>");
+                } else {
+                    $('#statusMessage').addClass("alert-danger  w-100");
+                    $('#statusMessage').html("<span> Unexpected error occurred. please try again later</span>");
+                }
+                setTimeout(hideStatusMessage, 2000);
+                location.reload();
+            }
+        });
+    }
+    function removeFromCart(cartId, menuName) {
+        $.ajax({
+            method: "post",
+            url: "/carts/RemoveFromCart/" + cartId,
+            success: function (result) {
+                $('#statusMessage').show();
+                if (result.status) {
+
+                    $('#statusMessage').addClass("alert-success  w-100");
+                    $('#statusMessage').html("<span>" + menuName + " is removed from the cart</span>");
+                    location.reload();
+                } else {
+                    $('#statusMessage').addClass("alert-danger  w-100");
+                    $('#statusMessage').html("<span> Unexpected error occurred. please try again later</span>");
+                }
+                setTimeout(hideStatusMessage, 2000);
+                location.reload();
+            }
+        });
+    }
+
+    function hideStatusMessage() {
+        $('#statusMessage').hide();
+    }</script>

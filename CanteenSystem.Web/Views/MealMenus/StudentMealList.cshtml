@@ -1,6 +1,7 @@
 ﻿@model CanteenSystem.Web.ViewModel.MealMenuCollectionModel
 @using Microsoft.AspNetCore.Identity
- 
+@using CanteenSystem.Dto.Models
+
 @inject SignInManager<ApplicationUser> SignInManager
 @using Microsoft.AspNetCore.Authorization
 @using System.Security.Claims;
@@ -11,11 +12,16 @@
     var userClaimId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.UserData);
     var userId = userClaimId == null ? 0 : Convert.ToInt32(userClaimId.Value);
 }
+<style>
+    td {
+        vertical-align: middle !important;
+    }
+</style>
 <h1>Available meal menu</h1>
 <hr />
 <form class="form-inline">
 
-    <div class="form-group">
+    <div class="form-group" style="padding-left: 20px;">
         <label for="staticEmail" class="col-sm-6 col-form-label">Meal type:</label>
         <div class="col-sm-6">
             @Html.DropDownListFor(m => m.SelectedMealType, new SelectList(Model.AvailableMealTypes.Items, "Value", "Text"),
@@ -23,26 +29,30 @@
         </div>
     </div>
 
-    <div class="form-group">
+    <div class="form-group" style="padding-left: 20px;">
         <label for="staticEmail" class="col-sm-6 col-form-label">Availability:</label>
         <div class="col-sm-6">
 
             <div class="input-group date" data-provide="datepicker">
-                <input type="text" name="SelectedAvailableDate" id="SelectedAvailableDate" readonly onchange="form.submit();" class="form-control" autocomplete="off"
+                <input placeholder="filter by date" type="text" name="SelectedAvailableDate" id="SelectedAvailableDate" readonly onchange="form.submit();" class="form-control" autocomplete="off"
                        value="@(Model.SelectedAvailableDate == default ? string.Empty: Model.SelectedAvailableDate.Value.ToString())">
                 <div class="input-group-addon">
                     <span class="glyphicon glyphicon-th"></span>
                 </div>
             </div>
-            <script>
-                $("#datepicker").datepicker("setDate", new Date());
+            <script>$("#datepicker").datepicker("setDate", new Date());
                 $('#datepicker').datepicker({
                     weekStart: 1,
                     daysOfWeekHighlighted: "6,0",
                     autoclose: true,
                     todayHighlight: true,
-                });
-            </script>
+                });</script>
+        </div>
+    </div>
+    <div class="form-group" style="padding-left: 20px;">
+       
+        <div class="col-sm-6">
+            <a id="GetAllRecords" onclick="getAllMeals()" class="btn btn-info" href="#">Get All meals</a>
         </div>
     </div>
 
@@ -50,79 +60,112 @@
 </form>
 <br />
 <br />
+<div class="alert " style="display:none" id="statusMessage"> </div>
+<div style="overflow-y: scroll; max-height: 500px;" id="style-7" class="scrollbar">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Image
+                </th>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Discount
+                </th>
+                <th>
+                    Price
+                </th>
+                <th>
+                    AvailableDate
+                </th>
+                <th>
+                    MealType
+                </th>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                Name
-            </th>
-            <th>
-                Discount
-            </th>
-            <th>
-                Price
-            </th>
-            <th>
-                AvailableDate
-            </th>
-            <th>
-                MealType
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model.MealMenuModels == null || !Model.MealMenuModels.Any())
-        {
-            <tr class="no-record-found">
-                <td colspan="4">
-                    <span> No records found</span>
-
-                </td>
+                <th></th>
             </tr>
-        }
-        else
-        {
-            foreach (var item in Model.MealMenuModels)
+        </thead>
+        <tbody>
+            @if (Model.MealMenuModels == null || !Model.MealMenuModels.Any())
             {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Name)
-                    </td>
-                    <td>
-                        @(item.DiscountName != null ? item.DiscountName: "N/A")
-                    </td>
-                    <td>
-                        @if (item.WasPrice != default)
-                        {
-                            <span style=" text-decoration: line-through;"> £ @item.WasPrice</span>
-                        }
-                        <span> £@item.Price</span>
-                    </td>
-                    <td>
-                        @item.AvailableDate.Date.ToString("dd/MM/yyyy")
-                    </td>
-                    <td>
-                        @item.MealType
-                    </td>
-                    <td>
-                        <a onclick="addToCart(@(item.Id),@(item.AvailabililtyDateId),@(userId))" href="#">Add to Card</a>
+                <tr class="no-record-found">
+                    <td colspan="6">
+                        <span> No records found</span>
+
                     </td>
                 </tr>
             }
-        }
-    </tbody>
-</table>
-
-<script>
-
-    function addToCart(menuId, availabilityDateId, userId) {
-        $.ajax({
-            method: "post",
-            url: "/carts/AddToCart/" + menuId + "/" + availabilityDateId + "/" + userId, success: function (result) {
-
+            else
+            {
+                foreach (var item in Model.MealMenuModels)
+                {
+                    <tr>
+                        <td>
+                            @if (string.IsNullOrEmpty(item.ImageName))
+                            {
+                                <img src="/images/no-image.png" alt="Image name" height="60px" width="60px" />
+                            }
+                            else
+                            {
+                                <img src="/images/@item.ImageName" alt="Image name" height="60px" width="60px" />
+                            }
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Name)
+                        </td>
+                        <td>
+                            @(item.DiscountName != null ? item.DiscountName: "N/A")
+                        </td>
+                        <td>
+                            @if (item.WasPrice != default)
+                            {
+                                <span style=" text-decoration: line-through;"> £ @item.WasPrice</span>
+                            }
+                            <span> £@item.Price</span>
+                        </td>
+                        <td>
+                            @item.AvailableDate.Date.ToString("dd/MM/yyyy")
+                        </td>
+                        <td>
+                            @item.MealType
+                        </td>
+                        <td>
+                            <a onclick="addToCart(@(item.Id),@(item.AvailabililtyDateId),@(userId),'@(item.Name)')" href="#">Add to Card</a>
+                        </td>
+                    </tr>
+                }
             }
-        });
-    } 
-</script>
+        </tbody>
+    </table>
+    </div>
+
+    <div class="text-center">
+        <a id="CancelBtn" class="btn btn-default" href="/home">Back to Home</a>
+    </div>
+    <script>function addToCart(menuId, availabilityDateId, userId, menuName) {
+            $.ajax({
+                method: "post",
+                url: "/carts/AddToCart/" + menuId + "/" + availabilityDateId + "/" + userId,
+                success: function (result) {
+                    $('#statusMessage').show();
+                    if (result.status) {
+
+                        $('#statusMessage').addClass("alert-success  w-100");
+                        $('#statusMessage').html("<span>" + menuName + " is added to the cart</span>");
+                    } else {
+                        $('#statusMessage').addClass("alert-danger  w-100");
+                        $('#statusMessage').html("<span>" + menuName + " has already been added to the cart</span>");
+                    }
+                    setTimeout(hideStatusMessage, 2000);
+                }
+            });
+        }
+
+        function getAllMeals() {
+            window.location.href = "/mealmenus/StudentMealList";
+        }
+        function hideStatusMessage() {
+            $('#statusMessage').hide();
+        }</script>

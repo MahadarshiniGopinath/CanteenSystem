@@ -5,7 +5,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using CanteenSystem.Web.Models;
+using CanteenSystem.Dal;
+using CanteenSystem.Dto.Models;
 using CanteenSystem.Web.ViewModel;
 using IdentityModel;
 using IdentityServer4.Services;
@@ -44,16 +45,22 @@ namespace CanteenSystem.Web.Controllers
         }
 
         [Route("login")]
-        public IActionResult Login(string returnUrl = null)
+        public IActionResult Login(string returnUrl = null,string message= null)
         {
             ViewData["ReturnUrl"] = returnUrl;
-            return View(new LoginModel());
+            var model = new LoginModel();
+            model.Message = message;
+            return View(model);
         }
 
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> Login(LoginModel model, string returnUrl = null)
         {
+            if(!ModelState.IsValid)
+            {
+                return View(model);
+            }
             var user = await userManager.FindByNameAsync(model.Username);
             if (user != null && await userManager.CheckPasswordAsync(user, model.Password))
             {
@@ -111,12 +118,17 @@ namespace CanteenSystem.Web.Controllers
         [Route("register")]
         public async Task<IActionResult> Register(RegisterModel model)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
             var userExists = await userManager.FindByNameAsync(model.Email);
             var studentId = 0;
             if (!model.IsParent)
             {
                 var existingRoleNumber = _context.UserProfiles.Where(x => x.RollNumber == model.Rollnumber).FirstOrDefault();
-                if (userExists != null || existingRoleNumber != null)
+              
+                if (userExists != null   || existingRoleNumber != null)
                 {
                     ModelState.AddModelError("error", "User already exists!");
 
@@ -211,7 +223,9 @@ namespace CanteenSystem.Web.Controllers
                     await userManager.AddToRoleAsync(newlyCreatedUser, UserRoles.Parents);
                 }
             }
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { message="User has been created and which needs to be verfied by admin. " +
+                "Please contact admin to verify your registration."
+            });
 
 
         }
@@ -227,10 +241,14 @@ namespace CanteenSystem.Web.Controllers
         [Route("register/admin")]
         public async Task<IActionResult> RegisterAdmin(RegisterModel model)
         {
+            if (!ModelState.IsValid)
+            {
+                model.IsAdmin = true;
+                return View(model);
+            }
             var userExists = await userManager.FindByNameAsync(model.Email);
-
-            var existingRoleNumber = _context.UserProfiles.Where(x => x.RollNumber == model.Rollnumber).FirstOrDefault();
-            if (userExists != null || existingRoleNumber != null)
+             
+            if (userExists != null)
             {
                 ModelState.AddModelError("error", "User already exists!");
                 model.IsAdmin = true;
@@ -277,7 +295,10 @@ namespace CanteenSystem.Web.Controllers
             }
 
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new
+            {
+                message = "Admin User has been created and please login using your username and password."
+            });
         }
 
         [HttpPost]
